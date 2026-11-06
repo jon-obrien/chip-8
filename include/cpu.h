@@ -7,6 +7,7 @@
 
 #define CHIP8_RAM_SIZE 4096
 #define CHIP8_ROM_START 0x200
+#define CHIP8_FONT_START 0x050
 
 typedef struct {
     uint8_t memory[CHIP8_RAM_SIZE];
