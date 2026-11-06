@@ -2,6 +2,7 @@
 
 #include "rom.h"
 #include "cpu.h"
+#include "display.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -21,18 +22,27 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    for (int i = 0; i < 500; i++) {
-        cpu_step(&cpu);
+    Display *display;
+    if (!display_init(&display)) {
+        rom_free(&rom);
+        return 1;
     }
 
-    for (int y = 0; y < CHIP8_DISPLAY_HEIGHT; y++) {
-        for (int x = 0; x < CHIP8_DISPLAY_WIDTH; x++) {
-            putchar(cpu.display[x][y] ? '#' : '.');
+    bool running = true;
+    while (running) {
+        if (display_poll_quit()) {
+            running = false;
         }
-        putchar('\n');
+
+        for (int i = 0; i < CHIP8_INSTRUCTIONS_PER_CYCLE; i++) {
+            cpu_step(&cpu);
+        }
+
+        display_draw(display, &cpu);
+        display_wait_frame();
     }
 
+    display_destroy(display);
     rom_free(&rom);
-
     return 0;
 }

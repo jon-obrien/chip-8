@@ -6,6 +6,8 @@ set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+find_package(SDL2 REQUIRED)
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()
@@ -25,7 +27,9 @@ target_include_directories(cpu PUBLIC include)
 add_library(rom STATIC src/rom.c)
 target_include_directories(rom PUBLIC include)
 
-add_executable(chip8 src/main.c)
-target_link_libraries(chip8 PRIVATE cpu rom)
+add_library(display STATIC src/display.c)
+target_include_directories(display PUBLIC include)
+target_link_libraries(display PUBLIC SDL2::SDL2)
 
-find_package(SDL2 REQUIRED)
+add_executable(chip8 src/main.c)
+target_link_libraries(chip8 PRIVATE cpu rom display)
