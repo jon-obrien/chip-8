@@ -2,6 +2,8 @@
 #include <stdio.h>
 
 #include "cpu.h"
+#include "opcodes.h"
+
 
 static const uint8_t font[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -25,6 +27,7 @@ static const uint8_t font[80] = {
 void cpu_init(Cpu *cpu) {
     memset(cpu, 0, sizeof *cpu);
     memcpy(&cpu->memory[CHIP8_FONT_START], font, sizeof font);
+    cpu->pc = CHIP8_ROM_START;
 }
 
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len) {
@@ -36,4 +39,10 @@ bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len) {
     memcpy(&cpu->memory[CHIP8_ROM_START], data, len);
 
     return true;
+}
+
+void cpu_step(Cpu *cpu) {
+    uint16_t opcode = (uint16_t)((cpu->memory[cpu->pc] << 8) | cpu->memory[cpu->pc + 1]);
+    cpu->pc += 2;
+    opcode_execute(cpu, opcode);
 }

@@ -30,10 +30,10 @@ bool rom_load(const char *path, Rom *rom) {
     }
 
     if (st.st_size <= 0 || st.st_size > ROM_MAX_SIZE) {
-           fprintf(stderr, "%s: invalid ROM size (%lld bytes)\n", path, (long long)st.st_size);
-           fclose(rom_file);
-           return false;
-       }
+        fprintf(stderr, "%s: invalid ROM size (%lld bytes)\n", path, (long long)st.st_size);
+        fclose(rom_file);
+        return false;
+    }
 
     size_t size = (size_t)st.st_size;
     uint8_t *data = malloc(size);

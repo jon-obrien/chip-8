@@ -21,10 +21,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    for (size_t i = 0; i < CHIP8_RAM_SIZE; i++) {
-        printf(" %02X", cpu.memory[i]);
+    int steps = 0;
+    while (steps < 100) {
+        cpu_step(&cpu);
+        steps++;
     }
-    printf("\n");
 
     rom_free(&rom);
 

@@ -11,9 +11,11 @@
 
 typedef struct {
     uint8_t memory[CHIP8_RAM_SIZE];
+    uint16_t pc;
 } Cpu;
 
 void cpu_init(Cpu *cpu);
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len);
+void cpu_step(Cpu *cpu);
 
 #endif
