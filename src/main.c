@@ -21,10 +21,15 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int steps = 0;
-    while (steps < 100) {
+    for (int i = 0; i < 500; i++) {
         cpu_step(&cpu);
-        steps++;
+    }
+
+    for (int y = 0; y < CHIP8_DISPLAY_HEIGHT; y++) {
+        for (int x = 0; x < CHIP8_DISPLAY_WIDTH; x++) {
+            putchar(cpu.display[x][y] ? '#' : '.');
+        }
+        putchar('\n');
     }
 
     rom_free(&rom);
