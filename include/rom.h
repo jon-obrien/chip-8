@@ -5,7 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define ROM_MAX_SIZE 3584
+#include "cpu.h"
+
+#define ROM_MAX_SIZE (CHIP8_RAM_SIZE - CHIP8_ROM_START)
 
 typedef struct {
     uint8_t *data;

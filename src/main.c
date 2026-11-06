@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "rom.h"
+#include "cpu.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -13,11 +14,15 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    printf("Loaded %s: %zu bytes\n", argv[1], rom.size);
+    Cpu cpu;
+    cpu_init(&cpu);
+    if (!cpu_load_rom(&cpu, rom.data, rom.size)) {
+        rom_free(&rom);
+        return 1;
+    }
 
-    size_t to_show = rom.size < 16 ? rom.size : 16;
-    for (size_t i = 0; i < to_show; i++) {
-        printf("%02X ", rom.data[i]);
+    for (size_t i = 0; i < CHIP8_RAM_SIZE; i++) {
+        printf(" %02X", cpu.memory[i]);
     }
     printf("\n");
 
