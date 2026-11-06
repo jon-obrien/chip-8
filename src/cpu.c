@@ -46,3 +46,25 @@ void cpu_step(Cpu *cpu) {
     cpu->pc += 2;
     opcode_execute(cpu, opcode);
 }
+
+bool cpu_stack_push(Cpu *cpu, uint16_t value) {
+    if (cpu->stack_ptr >= CHIP8_STACK_SIZE) {
+        return false;
+    }
+
+    cpu->stack[cpu->stack_ptr] = value;
+    cpu->stack_ptr += 1;
+
+    return true;
+}
+
+bool cpu_stack_pop(Cpu *cpu, uint16_t *value) {
+    if (cpu->stack_ptr == 0) {
+        return false;
+    }
+
+    cpu->stack_ptr -= 1;
+    *value = cpu->stack[cpu->stack_ptr];
+
+    return true;
+}

@@ -10,6 +10,8 @@
 #define CHIP8_FRAMES_PER_SECOND 60
 #define CHIP8_INSTRUCTIONS_PER_CYCLE (CHIP8_CPU_SPEED / CHIP8_FRAMES_PER_SECOND)
 
+#define CHIP8_STACK_SIZE 16
+
 #define CHIP8_FONT_START 0x050
 #define CHIP8_ROM_START 0x200
 #define CHIP8_CARRY_FLAG_INDEX 0xF
@@ -22,7 +24,7 @@ typedef struct {
     uint16_t pc;
     uint8_t display[CHIP8_DISPLAY_WIDTH][CHIP8_DISPLAY_HEIGHT];
     uint16_t I;
-    uint16_t stack[16];
+    uint16_t stack[CHIP8_STACK_SIZE];
     uint8_t stack_ptr;
     uint8_t delay_tmr;
     uint8_t sound_tmr;
@@ -32,5 +34,8 @@ typedef struct {
 void cpu_init(Cpu *cpu);
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len);
 void cpu_step(Cpu *cpu);
+
+bool cpu_stack_push(Cpu *cpu, uint16_t value);
+bool cpu_stack_pop(Cpu *cpu, uint16_t *value);
 
 #endif

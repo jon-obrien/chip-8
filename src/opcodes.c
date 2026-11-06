@@ -1,6 +1,6 @@
- #include <stdint.h>
+#include <stdint.h>
 #include <stdio.h>
- #include <string.h>
+#include <string.h>
 
 #include "opcodes.h"
 #include "cpu.h"
@@ -9,7 +9,7 @@ typedef void (*OpFn)(Cpu *cpu, uint16_t opcode);
 
 static void op_unknown(Cpu *cpu, uint16_t opcode) {
     (void)cpu;
-    printf("unknown opcode %04X\n", opcode);
+    fprintf(stderr, "unknown opcode %04X\n", opcode);
 }
 
 static void op_0xxx(Cpu *cpu, uint16_t opcode) {
@@ -17,6 +17,16 @@ static void op_0xxx(Cpu *cpu, uint16_t opcode) {
         case 0x00E0:
             memset(cpu->display, 0, sizeof cpu->display);
             break;
+        case 0x00EE: {
+            uint16_t value;
+            if (!cpu_stack_pop(cpu, &value)) {
+                fprintf(stderr, "stack underflow at pc %04X\n", cpu->pc);
+                break;
+            }
+
+            cpu->pc = value;
+            break;
+        }
         default:
             op_unknown(cpu, opcode);
             break;
@@ -24,6 +34,15 @@ static void op_0xxx(Cpu *cpu, uint16_t opcode) {
 }
 
 static void op_1nnn(Cpu *cpu, uint16_t opcode) {
+    cpu->pc = opcode & 0x0FFF;
+}
+
+static void op_2nnn(Cpu *cpu, uint16_t opcode) {
+    if (!(cpu_stack_push(cpu, cpu->pc))) {
+        fprintf(stderr, "stack underflow at pc %04X\n", cpu->pc);
+        return;
+    }
+
     cpu->pc = opcode & 0x0FFF;
 }
 
@@ -81,7 +100,7 @@ static void op_dxyn(Cpu *cpu, uint16_t opcode) {
 static const OpFn op_table[16] = {
     [0x0] = op_0xxx,
     [0x1] = op_1nnn,
-    op_unknown,
+    [0x2] = op_2nnn,
     op_unknown,
     op_unknown,
     op_unknown,
