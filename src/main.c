@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
             cpu_step(&cpu);
         }
 
+        cpu_tick_timers(&cpu);
         display_draw(display, &cpu);
         display_wait_frame();
     }

@@ -265,14 +265,14 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
         case 0x15:
             cpu->delay_tmr = cpu->V[x];
             break;
-        case 0x17:
+        case 0x18:
             cpu->sound_tmr = cpu->V[x];
             break;
         case 0x1E:{
-            uint16_t sum = (cpu->I + cpu->V[x]);
+            uint16_t sum = (uint16_t)(cpu->I + cpu->V[x]);
 
-            cpu->I = (uint8_t)sum;
-            if (sum > 255){
+            cpu->I = sum;
+            if (cpu->index_overflow_sets_vf && (255 < sum)) {
                 cpu->V[CHIP8_CARRY_FLAG_INDEX] = 1;
             } else {
                 cpu->V[CHIP8_CARRY_FLAG_INDEX] = 0;
@@ -289,10 +289,9 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
             }
             break;
         }
-        case 0x29: {
-            cpu->I = cpu->V[x] & 0xF;
+        case 0x29:
+            cpu->I = (uint16_t)(CHIP8_FONT_START + (cpu->V[x] & 0xF) * 5);
             break;
-        }
         case 0x55:
             for (uint8_t i = 0; i <= x; i++) {
                 cpu->memory[cpu->I + i] = cpu->V[i];

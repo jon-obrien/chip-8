@@ -34,11 +34,13 @@ typedef struct {
     bool shift_uses_vy;
     bool loadstore_uses_i;
     bool jump_uses_vx;
+    bool index_overflow_sets_vf;
 } Cpu;
 
 void cpu_init(Cpu *cpu);
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len);
 void cpu_step(Cpu *cpu);
+void cpu_tick_timers(Cpu *cpu);
 
 bool cpu_stack_push(Cpu *cpu, uint16_t value);
 bool cpu_stack_pop(Cpu *cpu, uint16_t *value);

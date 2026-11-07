@@ -30,6 +30,7 @@ void cpu_init(Cpu *cpu) {
     cpu->shift_uses_vy = true;
     cpu->loadstore_uses_i = true;
     cpu->jump_uses_vx = false;
+    cpu->index_overflow_sets_vf = false;
 }
 
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len) {
@@ -47,6 +48,15 @@ void cpu_step(Cpu *cpu) {
     uint16_t opcode = (uint16_t)((cpu->memory[cpu->pc] << 8) | cpu->memory[cpu->pc + 1]);
     cpu->pc += 2;
     opcode_execute(cpu, opcode);
+}
+
+void cpu_tick_timers(Cpu *cpu) {
+    if (cpu->delay_tmr > 0) {
+        cpu->delay_tmr--;
+    }
+    if (cpu->sound_tmr > 0) {
+        cpu->sound_tmr--;
+    }
 }
 
 bool cpu_stack_push(Cpu *cpu, uint16_t value) {
