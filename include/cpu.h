@@ -29,6 +29,8 @@ typedef struct {
     uint8_t delay_tmr;
     uint8_t sound_tmr;
     uint8_t V[16];
+
+    bool shift_uses_vy;
 } Cpu;
 
 void cpu_init(Cpu *cpu);
