@@ -4,10 +4,21 @@
 #include <SDL.h>
 
 #include "display.h"
+#include "keypad.h"
 
 struct Display {
     SDL_Window *window;
     SDL_Renderer *renderer;
+};
+
+static const struct {
+    SDL_Scancode scancode;
+    uint8_t key;
+} key_map[] = {
+    {SDL_SCANCODE_1, 0x1}, {SDL_SCANCODE_2, 0x2}, {SDL_SCANCODE_3, 0x3}, {SDL_SCANCODE_4, 0xC},
+    {SDL_SCANCODE_Q, 0x4}, {SDL_SCANCODE_W, 0x5}, {SDL_SCANCODE_E, 0x6}, {SDL_SCANCODE_R, 0xD},
+    {SDL_SCANCODE_A, 0x7}, {SDL_SCANCODE_S, 0x8}, {SDL_SCANCODE_D, 0x9}, {SDL_SCANCODE_F, 0xE},
+    {SDL_SCANCODE_Z, 0xA}, {SDL_SCANCODE_X, 0x0}, {SDL_SCANCODE_C, 0xB}, {SDL_SCANCODE_V, 0xF},
 };
 
 bool display_init(Display **out) {
@@ -67,11 +78,24 @@ void display_draw(Display *display, const Cpu *cpu) {
     SDL_RenderPresent(display->renderer);
 }
 
-bool display_poll_quit(void) {
+bool display_poll_events(Cpu *cpu) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             return true;
+        }
+
+        if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+            if (event.key.repeat) {
+                continue;
+            }
+
+            for (size_t i = 0; i < sizeof key_map / sizeof key_map[0]; i++) {
+                if (key_map[i].scancode == event.key.keysym.scancode) {
+                    keypad_set(cpu, key_map[i].key, event.type == SDL_KEYDOWN);
+                    printf("%X pressed\n", key_map[i].key);
+                }
+            }
         }
     }
     return false;

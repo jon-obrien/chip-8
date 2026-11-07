@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "rom.h"
 #include "cpu.h"
@@ -28,9 +30,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    srand((unsigned)time(NULL));
     bool running = true;
     while (running) {
-        if (display_poll_quit()) {
+        if (display_poll_events(&cpu)) {
             running = false;
         }
 

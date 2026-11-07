@@ -21,7 +21,7 @@ if(CHIP8_SANITIZE)
     add_link_options(-fsanitize=address,undefined)
 endif()
 
-add_library(cpu STATIC src/cpu.c src/opcodes.c)
+add_library(cpu STATIC src/cpu.c src/opcodes.c src/keypad.c)
 target_include_directories(cpu PUBLIC include)
 
 add_library(rom STATIC src/rom.c)
@@ -29,7 +29,7 @@ target_include_directories(rom PUBLIC include)
 
 add_library(display STATIC src/display.c)
 target_include_directories(display PUBLIC include)
-target_link_libraries(display PUBLIC SDL2::SDL2)
+target_link_libraries(display PUBLIC SDL2::SDL2 cpu)
 
 add_executable(chip8 src/main.c)
 target_link_libraries(chip8 PRIVATE cpu rom display)

@@ -40,7 +40,7 @@ static void op_1nnn(Cpu *cpu, uint16_t opcode) {
 
 static void op_2nnn(Cpu *cpu, uint16_t opcode) {
     if (!(cpu_stack_push(cpu, cpu->pc))) {
-        fprintf(stderr, "stack underflow at pc %04X\n", cpu->pc);
+        fprintf(stderr, "stack overflow at pc %04X\n", cpu->pc);
         return;
     }
 
@@ -118,7 +118,7 @@ static void op_8xyn(Cpu *cpu, uint16_t opcode) {
                 no_borrow = 1;
             }
 
-            cpu->V[x] -= (cpu->V[y]);
+            cpu->V[x] = (uint8_t)(cpu->V[x] - cpu->V[y]);
             cpu->V[CHIP8_CARRY_FLAG_INDEX] = no_borrow;
 
             break;

@@ -29,6 +29,7 @@ typedef struct {
     uint8_t delay_tmr;
     uint8_t sound_tmr;
     uint8_t V[16];
+    bool keys[4][4];
 
     bool shift_uses_vy;
 } Cpu;

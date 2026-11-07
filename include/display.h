@@ -11,7 +11,7 @@ typedef struct Display Display;
 
 bool display_init(Display **display);
 void display_draw(Display *display, const Cpu *cpu);
-bool display_poll_quit(void);
+bool display_poll_events(Cpu *cpu);
 void display_destroy(Display *display);
 void display_wait_frame(void);
 
