@@ -127,7 +127,7 @@ bool display_poll_events(Cpu *cpu) {
 }
 
 void display_update_sound(Display *display, const Cpu *cpu) {
-    bool key_beep = cpu->key_beep && keypad_first_pressed(cpu) >= 0;
+    bool key_beep = cpu->flags.key_beep && keypad_first_pressed(cpu) >= 0;
     if (cpu->sound_tmr == 0 && !key_beep) {
         return;
     }

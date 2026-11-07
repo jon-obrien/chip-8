@@ -132,7 +132,7 @@ static void op_8xyn(Cpu *cpu, uint16_t opcode) {
         case 0x6: {
             uint8_t value = cpu->V[x];
 
-            if (cpu->shift_uses_vy) {
+            if (cpu->flags.shift_uses_vy) {
                 value = cpu->V[y];
             }
 
@@ -157,7 +157,7 @@ static void op_8xyn(Cpu *cpu, uint16_t opcode) {
         case 0xE: {
             uint8_t value = cpu->V[x];
 
-            if (cpu->shift_uses_vy) {
+            if (cpu->flags.shift_uses_vy) {
                 value = cpu->V[y];
             }
 
@@ -190,7 +190,7 @@ static void op_annn(Cpu *cpu, uint16_t opcode) {
 static void op_bnnn(Cpu *cpu, uint16_t opcode) {
     uint8_t x = (opcode >> 8) & 0xF;
 
-    if (cpu->jump_uses_vx) {
+    if (cpu->flags.jump_uses_vx) {
         cpu->pc = (uint16_t)((opcode & 0x0FFF) + cpu->V[x]);
     } else {
         cpu->pc = (uint16_t)((opcode & 0x0FFF) + cpu->V[0]);
@@ -282,7 +282,7 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
             uint16_t sum = (uint16_t)(cpu->I + cpu->V[x]);
 
             cpu->I = sum;
-            if (cpu->index_overflow_sets_vf && (255 < sum)) {
+            if (cpu->flags.index_overflow_sets_vf && (255 < sum)) {
                 cpu->V[CHIP8_CARRY_FLAG_INDEX] = 1;
             } else {
                 cpu->V[CHIP8_CARRY_FLAG_INDEX] = 0;
@@ -311,7 +311,7 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
                 cpu->memory[cpu->I + i] = cpu->V[i];
             }
 
-            if (cpu->loadstore_uses_i) {
+            if (cpu->flags.loadstore_uses_i) {
                 cpu->I = (uint16_t)(cpu->I + x + 1);
             }
             break;
@@ -324,7 +324,7 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
                 cpu->V[i] = cpu->memory[cpu->I + i];
             }
 
-            if (cpu->loadstore_uses_i) {
+            if (cpu->flags.loadstore_uses_i) {
                 cpu->I = (uint16_t)(cpu->I + x + 1);
             }
             break;

@@ -28,11 +28,22 @@ void cpu_init(Cpu *cpu) {
     memset(cpu, 0, sizeof *cpu);
     memcpy(&cpu->memory[CHIP8_FONT_START], font, sizeof font);
     cpu->pc = CHIP8_ROM_START;
-    cpu->shift_uses_vy = true;
-    cpu->loadstore_uses_i = true;
-    cpu->jump_uses_vx = false;
-    cpu->index_overflow_sets_vf = false;
-    cpu->key_beep = true;
+}
+
+void flags_cosmac(Chip8Flags *flags) {
+    flags->shift_uses_vy = true;
+    flags->loadstore_uses_i = true;
+    flags->jump_uses_vx = false;
+    flags->index_overflow_sets_vf = false;
+    flags->key_beep = false;
+}
+
+void flags_modern(Chip8Flags *flags) {
+    flags->shift_uses_vy = false;
+    flags->loadstore_uses_i = false;
+    flags->jump_uses_vx = true;
+    flags->index_overflow_sets_vf = false;
+    flags->key_beep = false;
 }
 
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len) {

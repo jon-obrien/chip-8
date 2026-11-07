@@ -20,6 +20,14 @@
 #define CHIP8_DISPLAY_HEIGHT 32
 
 typedef struct {
+    bool shift_uses_vy;
+    bool loadstore_uses_i;
+    bool jump_uses_vx;
+    bool index_overflow_sets_vf;
+    bool key_beep;
+} Chip8Flags;
+
+typedef struct {
     uint8_t memory[CHIP8_RAM_SIZE];
     uint16_t pc;
     uint8_t display[CHIP8_DISPLAY_WIDTH][CHIP8_DISPLAY_HEIGHT];
@@ -32,17 +40,16 @@ typedef struct {
     bool keys[4][4];
     bool key_state[4][4];
 
-    bool shift_uses_vy;
-    bool loadstore_uses_i;
-    bool jump_uses_vx;
-    bool index_overflow_sets_vf;
-    bool key_beep;
+    Chip8Flags flags;
 } Cpu;
 
 void cpu_init(Cpu *cpu);
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len);
 void cpu_step(Cpu *cpu);
 void cpu_tick_timers(Cpu *cpu);
+
+void flags_cosmac(Chip8Flags *flags);
+void flags_modern(Chip8Flags *flags);
 
 bool cpu_stack_push(Cpu *cpu, uint16_t value);
 bool cpu_stack_pop(Cpu *cpu, uint16_t *value);
