@@ -32,6 +32,8 @@ typedef struct {
     bool keys[4][4];
 
     bool shift_uses_vy;
+    bool loadstore_uses_i;
+    bool jump_uses_vx;
 } Cpu;
 
 void cpu_init(Cpu *cpu);

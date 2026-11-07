@@ -5,6 +5,7 @@
 
 #include "opcodes.h"
 #include "cpu.h"
+#include "keypad.h"
 
 typedef void (*OpFn)(Cpu *cpu, uint16_t opcode);
 
@@ -181,6 +182,16 @@ static void op_annn(Cpu *cpu, uint16_t opcode) {
     cpu->I = opcode & 0x0FFF;
 }
 
+static void op_bnnn(Cpu *cpu, uint16_t opcode) {
+    uint8_t x = (opcode >> 8) & 0xF;
+
+    if (cpu->jump_uses_vx) {
+        cpu->pc = (uint16_t)((opcode & 0x0FFF) + cpu->V[x]);
+    } else {
+        cpu->pc = (uint16_t)((opcode & 0x0FFF) + cpu->V[0]);
+    }
+}
+
 static void op_cxnn(Cpu *cpu, uint16_t opcode) {
     uint8_t x = (opcode >> 8) & 0xF;
 
@@ -224,6 +235,97 @@ static void op_dxyn(Cpu *cpu, uint16_t opcode) {
     }
 }
 
+static void op_exxx(Cpu *cpu, uint16_t opcode) {
+    uint8_t x = (opcode >> 8) & 0xF;
+
+    switch (opcode & 0xFF) {
+        case 0x9E:
+            if (keypad_is_pressed(cpu, cpu->V[x])) {
+                cpu->pc += 2;
+            }
+            break;
+        case 0xA1:
+            if (!(keypad_is_pressed(cpu, cpu->V[x]))) {
+                cpu->pc += 2;
+            }
+            break;
+        default:
+            op_unknown(cpu, opcode);
+            break;
+    }
+}
+
+static void op_fxxx(Cpu *cpu, uint16_t opcode) {
+    uint8_t x = (opcode >> 8) & 0xF;
+
+    switch (opcode & 0xFF) {
+        case 0x07:
+            cpu->V[x] = cpu->delay_tmr;
+            break;
+        case 0x15:
+            cpu->delay_tmr = cpu->V[x];
+            break;
+        case 0x17:
+            cpu->sound_tmr = cpu->V[x];
+            break;
+        case 0x1E:{
+            uint16_t sum = (cpu->I + cpu->V[x]);
+
+            cpu->I = (uint8_t)sum;
+            if (sum > 255){
+                cpu->V[CHIP8_CARRY_FLAG_INDEX] = 1;
+            } else {
+                cpu->V[CHIP8_CARRY_FLAG_INDEX] = 0;
+            }
+
+            break;
+        }
+        case 0x0A: {
+            int key = keypad_first_pressed(cpu);
+            if (key < 0) {
+                cpu->pc -= 2;
+            } else {
+                cpu->V[x] = (uint8_t)key;
+            }
+            break;
+        }
+        case 0x29: {
+            cpu->I = cpu->V[x] & 0xF;
+            break;
+        }
+        case 0x55:
+            for (uint8_t i = 0; i <= x; i++) {
+                cpu->memory[cpu->I + i] = cpu->V[i];
+            }
+
+            if (cpu->loadstore_uses_i) {
+                cpu->I = (uint16_t)(cpu->I + x + 1);
+            }
+            break;
+        case 0x65:
+            for (uint8_t i = 0; i <= x; i++) {
+                cpu->V[i] = cpu->memory[cpu->I + i];
+            }
+
+            if (cpu->loadstore_uses_i) {
+                cpu->I = (uint16_t)(cpu->I + x + 1);
+            }
+            break;
+        case 0x33: {
+            uint8_t value = cpu->V[x];
+
+            cpu->memory[cpu->I] = (uint8_t)(value / 100);
+            cpu->memory[cpu->I + 1] = (uint8_t)((value / 10) % 10);
+            cpu->memory[cpu->I + 2] = (uint8_t)(value % 10);
+
+            break;
+        }
+        default:
+            op_unknown(cpu, opcode);
+            break;
+    }
+}
+
 static const OpFn op_table[16] = {
     [0x0] = op_0xxx,
     [0x1] = op_1nnn,
@@ -236,11 +338,11 @@ static const OpFn op_table[16] = {
     [0x8] = op_8xyn,
     [0x9] = op_9xy0,
     [0xA] = op_annn,
-    op_unknown,
+    [0xB] = op_bnnn,
     [0xC] = op_cxnn,
     [0xD] = op_dxyn,
-    op_unknown,
-    op_unknown,
+    [0xE] = op_exxx,
+    [0xF] = op_fxxx,
 };
 
 void opcode_execute(Cpu *cpu, uint16_t opcode) {
