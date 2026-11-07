@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -31,6 +32,7 @@ void cpu_init(Cpu *cpu) {
     cpu->loadstore_uses_i = true;
     cpu->jump_uses_vx = false;
     cpu->index_overflow_sets_vf = false;
+    cpu->key_beep = true;
 }
 
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len) {
@@ -45,6 +47,11 @@ bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len) {
 }
 
 void cpu_step(Cpu *cpu) {
+    if (cpu->pc + 1 >= CHIP8_RAM_SIZE) {
+        fprintf(stderr, "pc out of range: %04X\n", cpu->pc);
+        return;
+    }
+
     uint16_t opcode = (uint16_t)((cpu->memory[cpu->pc] << 8) | cpu->memory[cpu->pc + 1]);
     cpu->pc += 2;
     opcode_execute(cpu, opcode);

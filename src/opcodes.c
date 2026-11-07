@@ -14,6 +14,11 @@ static void op_unknown(Cpu *cpu, uint16_t opcode) {
     fprintf(stderr, "unknown opcode %04X\n", opcode);
 }
 
+static bool memory_range_ok(const Cpu *cpu, uint32_t start, uint32_t count) {
+    (void)cpu;
+    return start + count <= CHIP8_RAM_SIZE;
+}
+
 static void op_0xxx(Cpu *cpu, uint16_t opcode) {
     switch (opcode) {
         case 0x00E0:
@@ -214,6 +219,11 @@ static void op_dxyn(Cpu *cpu, uint16_t opcode) {
             break;
         }
 
+        if (!(memory_range_ok(cpu, cpu->I, cpu->I + i))) {
+            fprintf(stderr, "memory read out of range at pc %04X\n", cpu->pc - 2);
+            break;
+        }
+
         uint8_t sprite_data = cpu->memory[cpu->I + i];
 
         for (uint8_t j=0; j < 8; j++) {
@@ -293,6 +303,10 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
             cpu->I = (uint16_t)(CHIP8_FONT_START + (cpu->V[x] & 0xF) * 5);
             break;
         case 0x55:
+            if (!(memory_range_ok(cpu, cpu->I, x + 1))) {
+                fprintf(stderr, "memory write out of range at pc %04X\n", cpu->pc - 2);
+                break;
+            }
             for (uint8_t i = 0; i <= x; i++) {
                 cpu->memory[cpu->I + i] = cpu->V[i];
             }
@@ -302,6 +316,10 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
             }
             break;
         case 0x65:
+            if (!(memory_range_ok(cpu, cpu->I, cpu->I + 1))) {
+                fprintf(stderr, "memory read out of range at pc %04X\n", cpu->pc - 2);
+                break;
+            }
             for (uint8_t i = 0; i <= x; i++) {
                 cpu->V[i] = cpu->memory[cpu->I + i];
             }
@@ -311,6 +329,10 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
             }
             break;
         case 0x33: {
+            if (!(memory_range_ok(cpu, cpu->I, cpu->I + 3))) {
+                fprintf(stderr, "memory write out of range at pc %04X\n", cpu->pc - 2);
+                break;
+            }
             uint8_t value = cpu->V[x];
 
             cpu->memory[cpu->I] = (uint8_t)(value / 100);

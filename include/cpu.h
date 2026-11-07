@@ -30,11 +30,13 @@ typedef struct {
     uint8_t sound_tmr;
     uint8_t V[16];
     bool keys[4][4];
+    bool key_state[4][4];
 
     bool shift_uses_vy;
     bool loadstore_uses_i;
     bool jump_uses_vx;
     bool index_overflow_sets_vf;
+    bool key_beep;
 } Cpu;
 
 void cpu_init(Cpu *cpu);

@@ -5,6 +5,7 @@
 #include "rom.h"
 #include "cpu.h"
 #include "display.h"
+#include "keypad.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -42,6 +43,8 @@ int main(int argc, char *argv[]) {
         }
 
         cpu_tick_timers(&cpu);
+        display_update_sound(display, &cpu);
+        keypad_end_frame(&cpu);
         display_draw(display, &cpu);
         display_wait_frame();
     }
