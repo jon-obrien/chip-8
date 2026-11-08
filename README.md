@@ -1,6 +1,6 @@
 # CHIP-8 emulator
 
-A CHIP-8 emulator written in C, built as a learning project.
+A CHIP-8 emulator written in C, built as a learning project following [Tobias' Blogpost](https://tobiasvl.github.io/blog/write-a-chip-8-emulator) and [Cowgod's Chip-8 Technical Reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM): the opcode list, memory map, and display format. 
 
 It has a CPU core with no SDL and no file I/O, and an SDL2 frontend for the window, keyboard, and sound. It can run in CHIP-8, SUPER-CHIP, and XO-CHIP quirk modes, selected at startup.
 
@@ -96,17 +96,44 @@ roms/      Test ROMs (see roms/README.md)
 
 ## Status
 
-Implemented:
+### Implemented
 
-- All standard CHIP-8 opcodes.
-- Quirk behaviour for the four models.
-- Keypad, sound timer, and delay timer.
-- The `1-chip8-logo`, `2-ibm-logo`, `3-corax+`, `4-flags`, `6-keypad`, and `7-beep` test ROMs pass.
+- All standard CHIP-8 opcodes, except `0nnn`, which is ignored.
+- Keypad, delay timer, and sound timer.
+- `Fx0A` waits for a key to be pressed and then released, as on the COSMAC VIP.
+- Model presets for VF reset, memory increment, shift source, and jump with VX. These match the `5-quirks` expectations for `chip8`, `schip`, and `schip-legacy`.
+- Test ROMs passing: `1-chip8-logo`, `2-ibm-logo`, `3-corax+` and `4-flags` (on `chip8` and `schip`), `6-keypad`, and `7-beep`.
 
-Not yet implemented:
+### Missing SUPER-CHIP opcodes
 
-- SUPER-CHIP `00xx` opcodes and high-resolution mode.
-- Display wait and sprite clipping as quirk options.
-- XO-CHIP features beyond the basics.
+- `00CN`: scroll down N rows.
+- `00FB`: scroll right 4 pixels.
+- `00FC`: scroll left 4 pixels.
+- `00FD`: exit the interpreter.
+- `00FE`: low resolution (64×32).
+- `00FF`: high resolution (128×64).
+- `DXY0`: draw a 16×16 sprite.
+- `FX30`: point I at the large 8×10 font.
+- `FX75` and `FX85`: save and load the RPL user flags.
 
-The `5-quirks` tests fail until these are done. `dodge.ch8` does not run until SUPER-CHIP opcodes are implemented.
+High-resolution mode also needs a 128×64 display buffer, which doesn't exist yet. The display is 64×32.
+
+### Missing quirk behaviour
+
+- **Clipping:** `DXYN` always clips at the screen edges. XO-CHIP wraps sprites instead, so the `xochip` model is wrong here.
+- **Display wait:** not implemented. The `chip8` model needs it on, `schip-legacy` needs it in low resolution only, and `schip` and `xochip` need it off.
+- **XO-CHIP shifting:** the `xochip` preset shifts VX in place. The `5-quirks` test expects it to shift VY. This is not yet verified against the XO-CHIP spec, and I haven't changed it.
+- **Expected screens:** the `5-quirks-schip-modern`, `5-quirks-schip-legacy`, and `5-quirks-xochip` screens come from Octo screenshots. Some rows in those screens differ from what the test ROM's own checks expect. This is still under review.
+
+### Missing XO-CHIP features
+
+- XO-CHIP opcodes beyond SUPER-CHIP, such as bitplane selection, long `I` loads, and audio pattern and pitch.
+- The XO-CHIP memory size (64K) and multi-plane display.
+
+### Not covered by tests
+
+- The community ROMs in `roms/` (`dinorun`, `dodge`, `snake`, and `tank`) have no tests. `dodge` needs the SUPER-CHIP opcodes above.
+- SDL key mapping and audio output have no automated tests.
+- The `key_beep` and `index_overflow_sets_vf` flags exist, but every model leaves them off and no test uses them.
+
+The four `5-quirks` tests fail for the reasons in the quirk list above.
