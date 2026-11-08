@@ -9,12 +9,14 @@ extern const TestSuite opcode_suite;
 extern const TestSuite cpu_suite;
 extern const TestSuite keypad_suite;
 extern const TestSuite display_suite;
+extern const TestSuite rom_suite;
 
 static const TestSuite *const suites[] = {
     &opcode_suite,
     &cpu_suite,
     &keypad_suite,
     &display_suite,
+    &rom_suite,
 };
 static const size_t suite_count = sizeof suites / sizeof suites[0];
 

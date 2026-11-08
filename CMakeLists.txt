@@ -42,7 +42,9 @@ add_executable(chip8_tests
     tests/unit/cpu.c
     tests/unit/keypad.c
     tests/unit/display.c
+    tests/rom/roms.c
 )
 target_include_directories(chip8_tests PRIVATE tests/harness)
-target_link_libraries(chip8_tests PRIVATE cpu)
+target_link_libraries(chip8_tests PRIVATE cpu rom)
+target_compile_definitions(chip8_tests PRIVATE CHIP8_ROM_DIR="${CMAKE_SOURCE_DIR}/roms")
 add_test(NAME chip8_tests COMMAND chip8_tests)
