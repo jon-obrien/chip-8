@@ -4,7 +4,7 @@ A CHIP-8 emulator written in C, built as a learning project.
 
 It has a CPU core with no SDL and no file I/O, and an SDL2 frontend for the window, keyboard, and sound. It can run in CHIP-8, SUPER-CHIP, and XO-CHIP quirk modes, selected at startup.
 
-The test suite runs unit tests and the [Timendus CHIP-8 test ROMs](https://github.com/Timendus/chip8-test-suite), and checks the screens against reference images. See [roms/README.md](roms/README.md) for the ROMs.
+The test suite runs unit tests and the Timendus CHIP-8 test ROMs. See [roms/README.md](roms/README.md) for the ROMs.
 
 ## Requirements
 
@@ -109,4 +109,4 @@ Not yet implemented:
 - Display wait and sprite clipping as quirk options.
 - XO-CHIP features beyond the basics.
 
-The four `5-quirks` tests fail until these are done. This is expected.
+The `5-quirks` tests fail until these are done. `dodge.ch8` does not run until SUPER-CHIP opcodes are implemented.
