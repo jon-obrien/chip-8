@@ -1,6 +1,6 @@
 # CHIP-8 emulator
 
-A CHIP-8 emulator written in C, built as a learning project. It is designed so the CPU core can later be reused for a GBA emulator.
+A CHIP-8 emulator written in C, built as a learning project.
 
 It has a CPU core with no SDL and no file I/O, and an SDL2 frontend for the window, keyboard, and sound. It can run in CHIP-8, SUPER-CHIP, and XO-CHIP quirk modes, selected at startup.
 
