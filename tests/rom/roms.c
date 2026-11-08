@@ -7,6 +7,7 @@
 #include "rom.h"
 
 #define ROM_FRAMES 600
+#define QUIRKS_MENU_ADDR 0x1FF
 #define SCREEN_LINE_MAX (CHIP8_DISPLAY_WIDTH + 2)
 
 typedef struct {
@@ -57,7 +58,8 @@ static void check_screen_file(const char *file, int line, const Cpu *cpu, const 
 
 #define CHECK_SCREEN_FILE(cpu, name) check_screen_file(__FILE__, __LINE__, (cpu), (name))
 
-static bool run_rom(Cpu *cpu, const char *file, void (*preset)(Chip8Flags *)) {
+/* menu_choice is written to QUIRKS_MENU_ADDR when non-zero, to skip a ROM's menu. */
+static bool run_rom(Cpu *cpu, const char *file, Chip8Model model, uint8_t menu_choice) {
     char path[512];
     snprintf(path, sizeof path, "%s/%s", CHIP8_ROM_DIR, file);
 
@@ -67,11 +69,15 @@ static bool run_rom(Cpu *cpu, const char *file, void (*preset)(Chip8Flags *)) {
     }
 
     cpu_init(cpu);
-    preset(&cpu->flags);
+    cpu_set_model(cpu, model);
     bool loaded = cpu_load_rom(cpu, rom.data, rom.size);
     rom_free(&rom);
     if (!loaded) {
         return false;
+    }
+
+    if (menu_choice != 0) {
+        cpu->memory[QUIRKS_MENU_ADDR] = menu_choice;
     }
 
     for (int f = 0; f < ROM_FRAMES; f++) {
@@ -87,47 +93,75 @@ static bool run_rom(Cpu *cpu, const char *file, void (*preset)(Chip8Flags *)) {
 
 static void test_chip8_logo_splash(void) {
     Cpu cpu;
-    CHECK(run_rom(&cpu, "1-chip8-logo.ch8", flags_cosmac));
+    CHECK(run_rom(&cpu, "1-chip8-logo.ch8", MODEL_CHIP8, 0));
     CHECK_SCREEN_FILE(&cpu, "1-chip8-logo.txt");
 }
 
 static void test_ibm_logo_shows_ibm(void) {
     Cpu cpu;
-    CHECK(run_rom(&cpu, "2-ibm-logo.ch8", flags_cosmac));
+    CHECK(run_rom(&cpu, "2-ibm-logo.ch8", MODEL_CHIP8, 0));
     CHECK_SCREEN_FILE(&cpu, "2-ibm-logo.txt");
 }
 
-static void test_corax_all_checks_cosmac(void) {
+static void test_corax_all_checks_chip8(void) {
     Cpu cpu;
-    CHECK(run_rom(&cpu, "3-corax+.ch8", flags_cosmac));
+    CHECK(run_rom(&cpu, "3-corax+.ch8", MODEL_CHIP8, 0));
     CHECK_SCREEN_FILE(&cpu, "3-corax+.txt");
 }
 
-static void test_corax_all_checks_modern(void) {
+static void test_corax_all_checks_schip(void) {
     Cpu cpu;
-    CHECK(run_rom(&cpu, "3-corax+.ch8", flags_modern));
+    CHECK(run_rom(&cpu, "3-corax+.ch8", MODEL_SCHIP_MODERN, 0));
     CHECK_SCREEN_FILE(&cpu, "3-corax+.txt");
 }
 
-static void test_flags_all_checks_cosmac(void) {
+static void test_flags_all_checks_chip8(void) {
     Cpu cpu;
-    CHECK(run_rom(&cpu, "4-flags.ch8", flags_cosmac));
+    CHECK(run_rom(&cpu, "4-flags.ch8", MODEL_CHIP8, 0));
     CHECK_SCREEN_FILE(&cpu, "4-flags.txt");
 }
 
-static void test_flags_all_checks_modern(void) {
+static void test_flags_all_checks_schip(void) {
     Cpu cpu;
-    CHECK(run_rom(&cpu, "4-flags.ch8", flags_modern));
+    CHECK(run_rom(&cpu, "4-flags.ch8", MODEL_SCHIP_MODERN, 0));
     CHECK_SCREEN_FILE(&cpu, "4-flags.txt");
+}
+
+static void test_quirks_shows_chip8_results(void) {
+    Cpu cpu;
+    CHECK(run_rom(&cpu, "5-quirks.ch8", MODEL_CHIP8, 1));
+    CHECK_SCREEN_FILE(&cpu, "5-quirks-chip8.txt");
+}
+
+static void test_quirks_shows_schip_modern_results(void) {
+    Cpu cpu;
+    CHECK(run_rom(&cpu, "5-quirks.ch8", MODEL_SCHIP_MODERN, 2));
+    CHECK_SCREEN_FILE(&cpu, "5-quirks-schip-modern.txt");
+}
+
+static void test_quirks_shows_schip_legacy_results(void) {
+    Cpu cpu;
+    CHECK(run_rom(&cpu, "5-quirks.ch8", MODEL_SCHIP_LEGACY, 4));
+    CHECK_SCREEN_FILE(&cpu, "5-quirks-schip-legacy.txt");
+}
+
+static void test_quirks_shows_xochip_results(void) {
+    Cpu cpu;
+    CHECK(run_rom(&cpu, "5-quirks.ch8", MODEL_XO_CHIP, 3));
+    CHECK_SCREEN_FILE(&cpu, "5-quirks-xochip.txt");
 }
 
 static const TestCase rom_tests[] = {
-    {"1-chip8-logo shows splash",     test_chip8_logo_splash},
-    {"2-ibm-logo shows IBM logo",     test_ibm_logo_shows_ibm},
-    {"3-corax+ all checks on cosmac", test_corax_all_checks_cosmac},
-    {"3-corax+ all checks on modern", test_corax_all_checks_modern},
-    {"4-flags all checks on cosmac",  test_flags_all_checks_cosmac},
-    {"4-flags all checks on modern",  test_flags_all_checks_modern},
+    {"1-chip8-logo shows splash",      test_chip8_logo_splash},
+    {"2-ibm-logo shows IBM logo",      test_ibm_logo_shows_ibm},
+    {"3-corax+ all checks on chip8",   test_corax_all_checks_chip8},
+    {"3-corax+ all checks on schip",   test_corax_all_checks_schip},
+    {"4-flags all checks on chip8",    test_flags_all_checks_chip8},
+    {"4-flags all checks on schip",    test_flags_all_checks_schip},
+    {"5-quirks shows chip8 results",   test_quirks_shows_chip8_results},
+    {"5-quirks shows schip modern results", test_quirks_shows_schip_modern_results},
+    {"5-quirks shows schip legacy results", test_quirks_shows_schip_legacy_results},
+    {"5-quirks shows xochip results",       test_quirks_shows_xochip_results},
     {NULL, NULL},
 };
 

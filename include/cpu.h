@@ -19,6 +19,13 @@
 #define CHIP8_DISPLAY_WIDTH 64
 #define CHIP8_DISPLAY_HEIGHT 32
 
+typedef enum {
+    MODEL_CHIP8,
+    MODEL_SCHIP_MODERN,
+    MODEL_SCHIP_LEGACY,
+    MODEL_XO_CHIP,
+} Chip8Model;
+
 typedef struct {
     bool shift_uses_vy;
     bool loadstore_uses_i;
@@ -49,8 +56,7 @@ bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len);
 void cpu_step(Cpu *cpu);
 void cpu_tick_timers(Cpu *cpu);
 
-void flags_cosmac(Chip8Flags *flags);
-void flags_modern(Chip8Flags *flags);
+void cpu_set_model(Cpu *cpu, Chip8Model model);
 
 bool cpu_stack_push(Cpu *cpu, uint16_t value);
 bool cpu_stack_pop(Cpu *cpu, uint16_t *value);

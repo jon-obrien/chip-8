@@ -125,10 +125,10 @@ static void test_8xy0_copies_register(void) {
     CHECK_EQ(cpu.V[0], 9);
 }
 
-static void test_8xy1_or_resets_vf_cosmac(void) {
+static void test_8xy1_or_resets_vf_chip8(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.V[0] = 0xF0;
     cpu.V[1] = 0x0F;
     cpu.V[0xF] = 1;
@@ -137,10 +137,10 @@ static void test_8xy1_or_resets_vf_cosmac(void) {
     CHECK_EQ(cpu.V[0xF], 0);
 }
 
-static void test_8xy1_or_keeps_vf_modern(void) {
+static void test_8xy1_or_keeps_vf_schip(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_modern(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_SCHIP_MODERN);
     cpu.V[0] = 0xF0;
     cpu.V[1] = 0x0F;
     cpu.V[0xF] = 1;
@@ -149,10 +149,10 @@ static void test_8xy1_or_keeps_vf_modern(void) {
     CHECK_EQ(cpu.V[0xF], 1);
 }
 
-static void test_8xy2_and_resets_vf_cosmac(void) {
+static void test_8xy2_and_resets_vf_chip8(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.V[0] = 0xFC;
     cpu.V[1] = 0x3F;
     cpu.V[0xF] = 1;
@@ -161,10 +161,10 @@ static void test_8xy2_and_resets_vf_cosmac(void) {
     CHECK_EQ(cpu.V[0xF], 0);
 }
 
-static void test_8xy3_xor_resets_vf_cosmac(void) {
+static void test_8xy3_xor_resets_vf_chip8(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.V[0] = 0xFF;
     cpu.V[1] = 0x0F;
     cpu.V[0xF] = 1;
@@ -252,10 +252,10 @@ static void test_8xy5_edge_equal_values_have_no_borrow(void) {
     CHECK_EQ(cpu.V[0xF], 1);
 }
 
-static void test_8xy6_shift_cosmac_reads_vy(void) {
+static void test_8xy6_shift_chip8_reads_vy(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.V[1] = 6;
     cpu.V[2] = 3;
     run_opcode(&cpu, 0x8126);
@@ -263,10 +263,10 @@ static void test_8xy6_shift_cosmac_reads_vy(void) {
     CHECK_EQ(cpu.V[0xF], 1);
 }
 
-static void test_8xy6_shift_modern_reads_vx(void) {
+static void test_8xy6_shift_schip_reads_vx(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_modern(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_SCHIP_MODERN);
     cpu.V[1] = 6;
     cpu.V[2] = 3;
     run_opcode(&cpu, 0x8126);
@@ -277,16 +277,16 @@ static void test_8xy6_shift_modern_reads_vx(void) {
 static void test_8xy6_edge_shifted_bit_wins_when_x_is_f(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_modern(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_SCHIP_MODERN);
     cpu.V[0xF] = 2;
     run_opcode(&cpu, 0x8F06);
     CHECK_EQ(cpu.V[0xF], 0);
 }
 
-static void test_8xye_shift_left_modern(void) {
+static void test_8xye_shift_left_schip(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_modern(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_SCHIP_MODERN);
     cpu.V[1] = 0x81;
     run_opcode(&cpu, 0x810E);
     CHECK_EQ(cpu.V[1], 0x02);
@@ -351,7 +351,7 @@ static void test_annn_sets_index(void) {
 static void test_bnnn_jump_uses_v0(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.V[0] = 0x10;
     cpu.V[2] = 0x20;
     run_opcode(&cpu, 0xB234);
@@ -361,7 +361,7 @@ static void test_bnnn_jump_uses_v0(void) {
 static void test_bnnn_jump_uses_vx(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_modern(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_SCHIP_MODERN);
     cpu.V[0] = 0x10;
     cpu.V[2] = 0x20;
     run_opcode(&cpu, 0xB234);
@@ -371,7 +371,7 @@ static void test_bnnn_jump_uses_vx(void) {
 static void test_bnnn_rejects_fetch_past_end_of_memory(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_modern(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_SCHIP_MODERN);
     cpu.V[0xF] = 0x10;
     run_opcode(&cpu, 0xBFFF);
     CHECK_EQ(cpu.pc, 0x100F);
@@ -535,10 +535,10 @@ static void test_fx33_rejects_past_end_of_memory(void) {
     CHECK_EQ(cpu.memory[0xFFF], 0xAA);
 }
 
-static void test_fx55_stores_registers_and_advances_i_cosmac(void) {
+static void test_fx55_stores_registers_and_advances_i_chip8(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.V[0] = 1;
     cpu.V[1] = 2;
     cpu.V[2] = 3;
@@ -550,10 +550,10 @@ static void test_fx55_stores_registers_and_advances_i_cosmac(void) {
     CHECK_EQ(cpu.I, 0x303);
 }
 
-static void test_fx55_keeps_i_modern(void) {
+static void test_fx55_keeps_i_schip(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_modern(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_SCHIP_MODERN);
     cpu.V[0] = 1;
     cpu.V[1] = 2;
     cpu.V[2] = 3;
@@ -566,7 +566,7 @@ static void test_fx55_keeps_i_modern(void) {
 static void test_fx55_edge_stores_at_last_three_bytes(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.V[0] = 1;
     cpu.V[1] = 2;
     cpu.V[2] = 3;
@@ -580,7 +580,7 @@ static void test_fx55_edge_stores_at_last_three_bytes(void) {
 static void test_fx55_rejects_past_end_of_memory(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.V[0] = 1;
     cpu.V[1] = 2;
     cpu.V[2] = 3;
@@ -596,7 +596,7 @@ static void test_fx55_rejects_past_end_of_memory(void) {
 static void test_fx55_rejects_after_index_overflow(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.flags.index_overflow_sets_vf = true;
     cpu.I = 0xFFF;
     cpu.V[0] = 2;
@@ -607,10 +607,10 @@ static void test_fx55_rejects_after_index_overflow(void) {
     CHECK_EQ(cpu.I, 0x1001);
 }
 
-static void test_fx65_loads_registers_and_advances_i_cosmac(void) {
+static void test_fx65_loads_registers_and_advances_i_chip8(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.memory[0x300] = 7;
     cpu.memory[0x301] = 8;
     cpu.memory[0x302] = 9;
@@ -625,7 +625,7 @@ static void test_fx65_loads_registers_and_advances_i_cosmac(void) {
 static void test_fx65_edge_loads_at_last_three_bytes(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.memory[0xFFD] = 4;
     cpu.memory[0xFFE] = 5;
     cpu.memory[0xFFF] = 6;
@@ -639,7 +639,7 @@ static void test_fx65_edge_loads_at_last_three_bytes(void) {
 static void test_fx65_rejects_past_end_of_memory(void) {
     Cpu cpu;
     cpu_init(&cpu);
-    flags_cosmac(&cpu.flags);
+    cpu_set_model(&cpu, MODEL_CHIP8);
     cpu.V[0] = 0xAA;
     cpu.I = 0xFFE;
     run_opcode(&cpu, 0xF265);
@@ -742,10 +742,10 @@ static const TestCase opcode_tests[] = {
     {"6XNN sets register",                               test_6xnn_sets_register},
     {"7XNN wraps without touching VF",                   test_7xnn_wraps_without_touching_vf},
     {"8XY0 copies register",                             test_8xy0_copies_register},
-    {"8XY1 OR resets VF (cosmac)",                       test_8xy1_or_resets_vf_cosmac},
-    {"8XY1 OR keeps VF (modern)",                        test_8xy1_or_keeps_vf_modern},
-    {"8XY2 AND resets VF (cosmac)",                      test_8xy2_and_resets_vf_cosmac},
-    {"8XY3 XOR resets VF (cosmac)",                      test_8xy3_xor_resets_vf_cosmac},
+    {"8XY1 OR resets VF (chip8)",                       test_8xy1_or_resets_vf_chip8},
+    {"8XY1 OR keeps VF (schip)",                        test_8xy1_or_keeps_vf_schip},
+    {"8XY2 AND resets VF (chip8)",                      test_8xy2_and_resets_vf_chip8},
+    {"8XY3 XOR resets VF (chip8)",                      test_8xy3_xor_resets_vf_chip8},
     {"8XY4 sets carry",                                  test_8xy4_sets_carry},
     {"8XY4 no carry when sum fits",                      test_8xy4_no_carry_when_sum_fits},
     {"8XY4 edge 255 plus 0 has no carry",                test_8xy4_edge_255_plus_zero_has_no_carry},
@@ -754,18 +754,18 @@ static const TestCase opcode_tests[] = {
     {"8XY5 sets no-borrow",                              test_8xy5_sets_no_borrow},
     {"8XY5 borrow when Y is larger",                     test_8xy5_borrow_when_y_is_larger},
     {"8XY5 edge equal values have no borrow",            test_8xy5_edge_equal_values_have_no_borrow},
-    {"8XY6 shift reads VY (cosmac)",                     test_8xy6_shift_cosmac_reads_vy},
-    {"8XY6 shift reads VX (modern)",                     test_8xy6_shift_modern_reads_vx},
+    {"8XY6 shift reads VY (chip8)",                     test_8xy6_shift_chip8_reads_vy},
+    {"8XY6 shift reads VX (schip)",                     test_8xy6_shift_schip_reads_vx},
     {"8XY6 edge shifted bit wins when X is F",           test_8xy6_edge_shifted_bit_wins_when_x_is_f},
-    {"8XYE shift left (modern)",                         test_8xye_shift_left_modern},
+    {"8XYE shift left (schip)",                         test_8xye_shift_left_schip},
     {"8XY7 subtract reversed",                           test_8xy7_subtract_reversed},
     {"8XY7 borrow when X is larger",                     test_8xy7_borrow_when_x_is_larger},
     {"8XY7 edge equal values have no borrow",            test_8xy7_edge_equal_values_have_no_borrow},
     {"9XY0 skips when registers differ",                 test_9xy0_skips_when_registers_differ},
     {"9XY0 does not skip when equal",                    test_9xy0_does_not_skip_when_equal},
     {"ANNN sets index",                                  test_annn_sets_index},
-    {"BNNN jumps using V0 (cosmac)",                     test_bnnn_jump_uses_v0},
-    {"BNNN jumps using VX (modern)",                     test_bnnn_jump_uses_vx},
+    {"BNNN jumps using V0 (chip8)",                     test_bnnn_jump_uses_v0},
+    {"BNNN jumps using VX (schip)",                     test_bnnn_jump_uses_vx},
     {"BNNN rejects fetch past end of memory",            test_bnnn_rejects_fetch_past_end_of_memory},
     {"CXNN mask 0 gives 0",                              test_cxnn_mask_zero_gives_zero},
     {"CXNN respects mask",                               test_cxnn_respects_mask},
@@ -782,12 +782,12 @@ static const TestCase opcode_tests[] = {
     {"FX33 edge stores zero and 255",                    test_fx33_edge_stores_zero_and_255},
     {"FX33 edge stores at last three bytes",             test_fx33_edge_stores_at_last_three_bytes},
     {"FX33 rejects past end of memory",                  test_fx33_rejects_past_end_of_memory},
-    {"FX55 stores and advances I (cosmac)",              test_fx55_stores_registers_and_advances_i_cosmac},
-    {"FX55 keeps I (modern)",                            test_fx55_keeps_i_modern},
+    {"FX55 stores and advances I (chip8)",              test_fx55_stores_registers_and_advances_i_chip8},
+    {"FX55 keeps I (schip)",                            test_fx55_keeps_i_schip},
     {"FX55 edge stores at last three bytes",             test_fx55_edge_stores_at_last_three_bytes},
     {"FX55 rejects past end of memory",                  test_fx55_rejects_past_end_of_memory},
     {"FX55 rejects after index overflow",                test_fx55_rejects_after_index_overflow},
-    {"FX65 loads and advances I (cosmac)",               test_fx65_loads_registers_and_advances_i_cosmac},
+    {"FX65 loads and advances I (chip8)",               test_fx65_loads_registers_and_advances_i_chip8},
     {"FX65 edge loads at last three bytes",              test_fx65_edge_loads_at_last_three_bytes},
     {"FX65 rejects past end of memory",                  test_fx65_rejects_past_end_of_memory},
     {"EX9E skips when key pressed",                      test_ex9e_skips_when_key_pressed},

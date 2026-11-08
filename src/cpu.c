@@ -30,22 +30,43 @@ void cpu_init(Cpu *cpu) {
     cpu->pc = CHIP8_ROM_START;
 }
 
-void flags_cosmac(Chip8Flags *flags) {
-    flags->shift_uses_vy = true;
-    flags->loadstore_uses_i = true;
-    flags->jump_uses_vx = false;
-    flags->index_overflow_sets_vf = false;
-    flags->key_beep = false;
-    flags->logic_resets_vf = true;
-}
+static const Chip8Flags model_flags[] = {
+    [MODEL_CHIP8] = {
+        .shift_uses_vy = true,
+        .loadstore_uses_i = true,
+        .jump_uses_vx = false,
+        .index_overflow_sets_vf = false,
+        .key_beep = false,
+        .logic_resets_vf = true,
+    },
+    [MODEL_SCHIP_MODERN] = {
+        .shift_uses_vy = false,
+        .loadstore_uses_i = false,
+        .jump_uses_vx = true,
+        .index_overflow_sets_vf = false,
+        .key_beep = false,
+        .logic_resets_vf = false,
+    },
+    [MODEL_SCHIP_LEGACY] = {
+        .shift_uses_vy = false,
+        .loadstore_uses_i = false,
+        .jump_uses_vx = true,
+        .index_overflow_sets_vf = false,
+        .key_beep = false,
+        .logic_resets_vf = false,
+    },
+    [MODEL_XO_CHIP] = {
+        .shift_uses_vy = false,
+        .loadstore_uses_i = true,
+        .jump_uses_vx = false,
+        .index_overflow_sets_vf = false,
+        .key_beep = false,
+        .logic_resets_vf = false,
+    },
+};
 
-void flags_modern(Chip8Flags *flags) {
-    flags->shift_uses_vy = false;
-    flags->loadstore_uses_i = false;
-    flags->jump_uses_vx = true;
-    flags->index_overflow_sets_vf = false;
-    flags->key_beep = false;
-    flags->logic_resets_vf = false;
+void cpu_set_model(Cpu *cpu, Chip8Model model) {
+    cpu->flags = model_flags[model];
 }
 
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len) {

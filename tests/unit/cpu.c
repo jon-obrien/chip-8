@@ -110,24 +110,37 @@ static void test_stack_fills_and_empties(void) {
     CHECK(!cpu_stack_pop(&cpu, &value));
 }
 
-static void test_flag_presets(void) {
-    Chip8Flags flags;
+static void test_model_sets_flags(void) {
+    Cpu cpu;
 
-    flags_cosmac(&flags);
-    CHECK(flags.shift_uses_vy);
-    CHECK(flags.loadstore_uses_i);
-    CHECK(!flags.jump_uses_vx);
-    CHECK(!flags.index_overflow_sets_vf);
-    CHECK(!flags.key_beep);
-    CHECK(flags.logic_resets_vf);
+    cpu_init(&cpu);
+    cpu_set_model(&cpu, MODEL_CHIP8);
+    CHECK(cpu.flags.shift_uses_vy);
+    CHECK(cpu.flags.loadstore_uses_i);
+    CHECK(!cpu.flags.jump_uses_vx);
+    CHECK(!cpu.flags.index_overflow_sets_vf);
+    CHECK(!cpu.flags.key_beep);
+    CHECK(cpu.flags.logic_resets_vf);
 
-    flags_modern(&flags);
-    CHECK(!flags.shift_uses_vy);
-    CHECK(!flags.loadstore_uses_i);
-    CHECK(flags.jump_uses_vx);
-    CHECK(!flags.index_overflow_sets_vf);
-    CHECK(!flags.key_beep);
-    CHECK(!flags.logic_resets_vf);
+    cpu_set_model(&cpu, MODEL_SCHIP_MODERN);
+    CHECK(!cpu.flags.shift_uses_vy);
+    CHECK(!cpu.flags.loadstore_uses_i);
+    CHECK(cpu.flags.jump_uses_vx);
+    CHECK(!cpu.flags.index_overflow_sets_vf);
+    CHECK(!cpu.flags.key_beep);
+    CHECK(!cpu.flags.logic_resets_vf);
+
+    cpu_set_model(&cpu, MODEL_SCHIP_LEGACY);
+    CHECK(!cpu.flags.shift_uses_vy);
+    CHECK(!cpu.flags.loadstore_uses_i);
+    CHECK(cpu.flags.jump_uses_vx);
+    CHECK(!cpu.flags.logic_resets_vf);
+
+    cpu_set_model(&cpu, MODEL_XO_CHIP);
+    CHECK(!cpu.flags.shift_uses_vy);
+    CHECK(cpu.flags.loadstore_uses_i);
+    CHECK(!cpu.flags.jump_uses_vx);
+    CHECK(!cpu.flags.logic_resets_vf);
 }
 
 static const TestCase cpu_tests[] = {
@@ -142,7 +155,7 @@ static const TestCase cpu_tests[] = {
     {"timers count down",                      test_timers_count_down},
     {"timers stop at zero",                    test_timers_stop_at_zero},
     {"stack fills and empties",                test_stack_fills_and_empties},
-    {"flag presets",                           test_flag_presets},
+    {"model sets flags",                       test_model_sets_flags},
     {NULL, NULL},
 };
 
