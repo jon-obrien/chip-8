@@ -65,6 +65,16 @@ static const Chip8Flags model_flags[] = {
     },
 };
 
+void cpu_run_frame(Cpu *cpu) {
+    cpu->cycle_remainder += CHIP8_CPU_SPEED;
+    unsigned steps = cpu->cycle_remainder / CHIP8_FRAMES_PER_SECOND;
+    cpu->cycle_remainder %= CHIP8_FRAMES_PER_SECOND;
+
+    for (unsigned i = 0; i < steps; i++) {
+        cpu_step(cpu);
+    }
+}
+
 void cpu_set_model(Cpu *cpu, Chip8Model model) {
     cpu->flags = model_flags[model];
 }

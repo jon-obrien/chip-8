@@ -85,9 +85,7 @@ static bool start_rom(Cpu *cpu, const char *file, Chip8Model model, uint8_t menu
 
 static void run_frames(Cpu *cpu, int frames) {
     for (int f = 0; f < frames; f++) {
-        for (int i = 0; i < CHIP8_INSTRUCTIONS_PER_CYCLE; i++) {
-            cpu_step(cpu);
-        }
+        cpu_run_frame(cpu);
         cpu_tick_timers(cpu);
         keypad_end_frame(cpu);
     }
@@ -166,7 +164,7 @@ static void test_quirks_shows_xochip_results(void) {
 static void test_keypad_shows_menu(void) {
     Cpu cpu;
     CHECK(start_rom(&cpu, "6-keypad.ch8", MODEL_CHIP8, 0));
-    run_frames(&cpu, 610);
+    run_frames(&cpu, 600);
     CHECK_SCREEN_FILE(&cpu, "6-keypad-menu.txt");
 }
 
@@ -199,6 +197,70 @@ static void test_keypad_getkey_shows_all_good(void) {
     CHECK_SCREEN_FILE(&cpu, "6-keypad-getkey.txt");
 }
 
+/* On/off run lengths in frames for the SOS pattern in 7-beep.8o, starting with a beep.
+ * Beeps are exact. Gaps include the ROM's own code between waits, so they get a tolerance. */
+static const int sos_runs[] = {10, 5, 10, 5, 10, 20, 30, 5, 30, 5, 30, 20, 10, 5, 10, 5, 10, 60};
+#define SOS_RUN_COUNT (sizeof sos_runs / sizeof sos_runs[0])
+#define SOS_GAP_TOLERANCE 2
+
+static void test_beep_plays_sos_timeline(void) {
+    Cpu cpu;
+    CHECK(start_rom(&cpu, "7-beep.ch8", MODEL_CHIP8, 0));
+
+    bool beeping[ROM_FRAMES];
+    for (int f = 0; f < ROM_FRAMES; f++) {
+        cpu_run_frame(&cpu);
+        beeping[f] = cpu.sound_tmr > 0;
+        cpu_tick_timers(&cpu);
+        keypad_end_frame(&cpu);
+    }
+
+    int first = 0;
+    while (first < ROM_FRAMES && !beeping[first]) {
+        first++;
+    }
+
+    int runs[SOS_RUN_COUNT];
+    int count = 0;
+    int length = 0;
+    bool current = true;
+    for (int f = first; f < ROM_FRAMES && count < (int)SOS_RUN_COUNT; f++) {
+        if (beeping[f] == current) {
+            length++;
+        } else {
+            runs[count++] = length;
+            current = !current;
+            length = 1;
+        }
+    }
+
+    CHECK_EQ(count, SOS_RUN_COUNT);
+    for (int i = 0; i < count; i++) {
+        if (i % 2 == 0) {
+            CHECK_EQ(runs[i], sos_runs[i]);
+        } else {
+            CHECK(runs[i] >= sos_runs[i] - SOS_GAP_TOLERANCE);
+            CHECK(runs[i] <= sos_runs[i] + SOS_GAP_TOLERANCE);
+        }
+    }
+}
+
+static void test_beep_shows_speaker_while_beeping(void) {
+    Cpu cpu;
+    CHECK(start_rom(&cpu, "7-beep.ch8", MODEL_CHIP8, 0));
+    run_frames(&cpu, 5);
+    CHECK_SCREEN_FILE(&cpu, "7-beep-on.txt");
+}
+
+/* Frame 12 is inside the first gap, after the first 10-frame beep and before the next one. */
+static void test_beep_hides_speaker_between_beeps(void) {
+    Cpu cpu;
+    CHECK(start_rom(&cpu, "7-beep.ch8", MODEL_CHIP8, 0));
+    run_frames(&cpu, 12);
+    const char *rows[] = {""};
+    CHECK_SCREEN(&cpu, rows);
+}
+
 static const TestCase rom_tests[] = {
     {"1-chip8-logo shows splash",      test_chip8_logo_splash},
     {"2-ibm-logo shows IBM logo",      test_ibm_logo_shows_ibm},
@@ -214,6 +276,9 @@ static const TestCase rom_tests[] = {
     {"6-keypad down highlights pressed keys", test_keypad_down_highlights_pressed_keys},
     {"6-keypad up unhighlights pressed keys", test_keypad_up_unhighlights_pressed_keys},
     {"6-keypad getkey shows all good",      test_keypad_getkey_shows_all_good},
+    {"7-beep plays SOS timeline",           test_beep_plays_sos_timeline},
+    {"7-beep shows speaker while beeping",  test_beep_shows_speaker_while_beeping},
+    {"7-beep hides speaker between beeps",  test_beep_hides_speaker_between_beeps},
     {NULL, NULL},
 };
 

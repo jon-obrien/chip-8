@@ -73,12 +73,9 @@ int main(int argc, char *argv[]) {
             running = false;
         }
 
-        for (int i = 0; i < CHIP8_INSTRUCTIONS_PER_CYCLE; i++) {
-            cpu_step(&cpu);
-        }
-
-        cpu_tick_timers(&cpu);
+        cpu_run_frame(&cpu);
         display_update_sound(display, &cpu);
+        cpu_tick_timers(&cpu);
         keypad_end_frame(&cpu);
         display_draw(display, &cpu);
         display_wait_frame();

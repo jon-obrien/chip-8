@@ -8,7 +8,6 @@
 #define CHIP8_RAM_SIZE 4096
 #define CHIP8_CPU_SPEED 700
 #define CHIP8_FRAMES_PER_SECOND 60
-#define CHIP8_INSTRUCTIONS_PER_CYCLE (CHIP8_CPU_SPEED / CHIP8_FRAMES_PER_SECOND)
 
 #define CHIP8_STACK_SIZE 16
 
@@ -54,10 +53,12 @@ typedef struct {
     uint8_t V[16];
 
     Keypad keypad;
+    unsigned cycle_remainder;
     Chip8Flags flags;
 } Cpu;
 
 void cpu_init(Cpu *cpu);
+void cpu_run_frame(Cpu *cpu);
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len);
 void cpu_step(Cpu *cpu);
 void cpu_tick_timers(Cpu *cpu);
