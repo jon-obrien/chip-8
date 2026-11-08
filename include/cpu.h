@@ -25,6 +25,7 @@ typedef struct {
     bool jump_uses_vx;
     bool index_overflow_sets_vf;
     bool key_beep;
+    bool logic_resets_vf;
 } Chip8Flags;
 
 typedef struct {

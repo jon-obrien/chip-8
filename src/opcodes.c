@@ -99,12 +99,21 @@ static void op_8xyn(Cpu *cpu, uint16_t opcode) {
             break;
         case 0x1:
             cpu->V[x] |= cpu->V[y];
+            if (cpu->flags.logic_resets_vf) {
+                cpu->V[CHIP8_CARRY_FLAG_INDEX] = 0;
+            }
             break;
         case 0x2:
             cpu->V[x] &= cpu->V[y];
+            if (cpu->flags.logic_resets_vf) {
+                cpu->V[CHIP8_CARRY_FLAG_INDEX] = 0;
+            }
             break;
         case 0x3:
             cpu->V[x] ^= cpu->V[y];
+            if (cpu->flags.logic_resets_vf) {
+                cpu->V[CHIP8_CARRY_FLAG_INDEX] = 0;
+            }
             break;
         case 0x4:{
             uint16_t sum = (cpu->V[x] + cpu->V[y]);
@@ -204,8 +213,6 @@ static void op_cxnn(Cpu *cpu, uint16_t opcode) {
 }
 
 static void op_dxyn(Cpu *cpu, uint16_t opcode) {
-    cpu->V[CHIP8_CARRY_FLAG_INDEX] = 0;
-
     uint8_t x = (opcode >> 8) & 0xF;
     uint8_t y = (opcode >> 4) & 0xF;
     uint8_t n = opcode & 0xF;
@@ -213,13 +220,15 @@ static void op_dxyn(Cpu *cpu, uint16_t opcode) {
     uint8_t display_x = cpu->V[x] % CHIP8_DISPLAY_WIDTH;
     uint8_t display_y = cpu->V[y] % CHIP8_DISPLAY_HEIGHT;
 
+    cpu->V[CHIP8_CARRY_FLAG_INDEX] = 0;
+
     for (uint8_t i=0; i < n; i++) {
         uint8_t pixel_y = display_y + i;
         if (pixel_y >= CHIP8_DISPLAY_HEIGHT) {
             break;
         }
 
-        if (!(memory_range_ok(cpu, cpu->I, cpu->I + i))) {
+        if (!(memory_range_ok(cpu, cpu->I + i, 1))) {
             fprintf(stderr, "memory read out of range at pc %04X\n", cpu->pc - 2);
             break;
         }
@@ -281,13 +290,11 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
         case 0x1E:{
             uint16_t sum = (uint16_t)(cpu->I + cpu->V[x]);
 
-            cpu->I = sum;
-            if (cpu->flags.index_overflow_sets_vf && (255 < sum)) {
-                cpu->V[CHIP8_CARRY_FLAG_INDEX] = 1;
-            } else {
-                cpu->V[CHIP8_CARRY_FLAG_INDEX] = 0;
+            if (cpu->flags.index_overflow_sets_vf) {
+                cpu->V[CHIP8_CARRY_FLAG_INDEX] = (uint8_t)(sum > 0xFFF);
             }
 
+            cpu->I = sum;
             break;
         }
         case 0x0A: {
@@ -316,7 +323,7 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
             }
             break;
         case 0x65:
-            if (!(memory_range_ok(cpu, cpu->I, cpu->I + 1))) {
+            if (!(memory_range_ok(cpu, cpu->I, x + 1))) {
                 fprintf(stderr, "memory read out of range at pc %04X\n", cpu->pc - 2);
                 break;
             }
@@ -329,7 +336,7 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
             }
             break;
         case 0x33: {
-            if (!(memory_range_ok(cpu, cpu->I, cpu->I + 3))) {
+            if (!(memory_range_ok(cpu, cpu->I, 3))) {
                 fprintf(stderr, "memory write out of range at pc %04X\n", cpu->pc - 2);
                 break;
             }

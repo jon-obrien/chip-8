@@ -36,6 +36,7 @@ void flags_cosmac(Chip8Flags *flags) {
     flags->jump_uses_vx = false;
     flags->index_overflow_sets_vf = false;
     flags->key_beep = false;
+    flags->logic_resets_vf = true;
 }
 
 void flags_modern(Chip8Flags *flags) {
@@ -44,6 +45,7 @@ void flags_modern(Chip8Flags *flags) {
     flags->jump_uses_vx = true;
     flags->index_overflow_sets_vf = false;
     flags->key_beep = false;
+    flags->logic_resets_vf = false;
 }
 
 bool cpu_load_rom(Cpu *cpu, const uint8_t *data, size_t len) {
