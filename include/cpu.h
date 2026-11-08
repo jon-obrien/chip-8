@@ -36,6 +36,13 @@ typedef struct {
 } Chip8Flags;
 
 typedef struct {
+    bool keys[4][4];
+    bool key_state[4][4];
+    bool waiting;
+    uint8_t wait_key;
+} Keypad;
+
+typedef struct {
     uint8_t memory[CHIP8_RAM_SIZE];
     uint16_t pc;
     uint8_t display[CHIP8_DISPLAY_WIDTH][CHIP8_DISPLAY_HEIGHT];
@@ -45,9 +52,8 @@ typedef struct {
     uint8_t delay_tmr;
     uint8_t sound_tmr;
     uint8_t V[16];
-    bool keys[4][4];
-    bool key_state[4][4];
 
+    Keypad keypad;
     Chip8Flags flags;
 } Cpu;
 

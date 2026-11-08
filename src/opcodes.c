@@ -298,11 +298,20 @@ static void op_fxxx(Cpu *cpu, uint16_t opcode) {
             break;
         }
         case 0x0A: {
-            int key = keypad_first_pressed(cpu);
-            if (key < 0) {
+            if (!cpu->keypad.waiting) {
+                int key = keypad_first_pressed(cpu);
+                if (key < 0) {
+                    cpu->pc -= 2;
+                    break;
+                }
+                cpu->keypad.waiting = true;
+                cpu->keypad.wait_key = (uint8_t)key;
+            }
+            if (keypad_is_pressed(cpu, cpu->keypad.wait_key)) {
                 cpu->pc -= 2;
             } else {
-                cpu->V[x] = (uint8_t)key;
+                cpu->V[x] = cpu->keypad.wait_key;
+                cpu->keypad.waiting = false;
             }
             break;
         }

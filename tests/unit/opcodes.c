@@ -691,10 +691,23 @@ static void test_fx0a_waits_for_key(void) {
     CHECK_EQ(cpu.V[0], 0x33);
 }
 
-static void test_fx0a_stores_pressed_key(void) {
+static void test_fx0a_waits_for_release(void) {
+    Cpu cpu;
+    cpu_init(&cpu);
+    cpu.V[0] = 0x33;
+    keypad_set(&cpu, 5, true);
+    run_opcode(&cpu, 0xF00A);
+    CHECK_EQ(cpu.pc, CHIP8_ROM_START);
+    CHECK_EQ(cpu.V[0], 0x33);
+}
+
+static void test_fx0a_stores_key_on_release(void) {
     Cpu cpu;
     cpu_init(&cpu);
     keypad_set(&cpu, 5, true);
+    run_opcode(&cpu, 0xF00A);
+    keypad_set(&cpu, 5, false);
+    keypad_end_frame(&cpu);
     run_opcode(&cpu, 0xF00A);
     CHECK_EQ(cpu.pc, CHIP8_ROM_START + 2);
     CHECK_EQ(cpu.V[0], 5);
@@ -795,7 +808,8 @@ static const TestCase opcode_tests[] = {
     {"EXA1 skips when key not pressed",                  test_exa1_skips_when_key_not_pressed},
     {"EXA1 does not skip when key pressed",              test_exa1_does_not_skip_when_key_pressed},
     {"FX0A waits for key",                               test_fx0a_waits_for_key},
-    {"FX0A stores pressed key",                          test_fx0a_stores_pressed_key},
+    {"FX0A waits for release",                           test_fx0a_waits_for_release},
+    {"FX0A stores key on release",                       test_fx0a_stores_key_on_release},
     {"00EE underflow advances pc",                       test_00ee_underflow_advances_pc},
     {"2NNN overflow advances pc",                        test_2nnn_overflow_advances_pc},
     {"unknown opcodes are skipped",                      test_unknown_opcodes_are_skipped},
